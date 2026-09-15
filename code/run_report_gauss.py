@@ -104,6 +104,17 @@ def db(curve):
     return 10 * np.log10(curve["p"] / curve["p"].max())
 
 
+PCX = (C.SLM_W - 1) / 2.0            # 图案（未补零）中心：959.5
+PCY = (C.SLM_H - 1) / 2.0            # 539.5
+
+
+def pattern_window(phase, n=256):
+    """取未补零相位图中心 n x n 区域（用于与输入图对比）。"""
+    x0 = int(round(PCX - n / 2.0))
+    y0 = int(round(PCY - n / 2.0))
+    return phase[y0:y0 + n, x0:x0 + n]
+
+
 F1 = ('<div class="grid2">'
       + cell(png_uri(norm(phase_full, vmin=0, vmax=C.FULL), LUT_GRAY, size=(900, 506)),
              "图 1a　按公式重画的相位图（1920 × 1080，8 µm 像素，铺满整幅 SLM）")
@@ -113,13 +124,10 @@ F1 = ('<div class="grid2">'
       + '<div class="grid3">'
       + cell(png_uri(norm(D["phi_in"], vmin=0, vmax=C.FULL), LUT_GRAY, size=(300, 300)),
              "图 1c　输入 256 × 256 相位图")
-      + cell(png_uri(norm(phase_full[CEN[1].__int__() - 128:CEN[1].__int__() + 128,
-                                      CEN[0].__int__() - 128:CEN[0].__int__() + 128],
-                          vmin=0, vmax=C.FULL), LUT_GRAY, size=(300, 300)),
+      + cell(png_uri(norm(pattern_window(phase_full), vmin=0, vmax=C.FULL),
+                     LUT_GRAY, size=(300, 300)),
              "图 1d　重画图中心 256 × 256 区域")
-      + cell(png_uri(norm(np.mod(phase_full[CEN[1].__int__() - 128:CEN[1].__int__() + 128,
-                                            CEN[0].__int__() - 128:CEN[0].__int__() + 128]
-                                 - D["phi_in"] + np.pi, C.FULL) - np.pi,
+      + cell(png_uri(norm(np.mod(pattern_window(phase_full) - D["phi_in"] + np.pi, C.FULL) - np.pi,
                           vmin=-0.03, vmax=0.03), LUT_MAG, size=(300, 300)),
              "图 1e　重画图与输入图之差（±0.03 rad）")
       + '</div>'
@@ -389,7 +397,9 @@ BODY = f"""
 优化结果为径向对称的连续相位分布，环带密度与原始图案相当（局部环带周期约 6–8 个像素），
 局部相位梯度不超过 SLM 采样所能支持的奈奎斯特极限（λ/2Δ = 0.0665），可直接加载。</p>
 <p class="muted">说明：该优化针对单一重建距离 z = 100 mm 进行，此时光斑旁瓣最低；
-其他距离处的光斑形态与优化前接近。</p>
+其他距离处的光斑形态与优化前接近。优化后亮环半径约 13 µm、环宽约 10 µm，
+与 SLM 像素间距（8 µm）同量级，属该器件在此数值孔径下可达到的极限尺寸；
+主瓣能量占比与旁瓣电平均在 37 µm 以上的尺度上统计，不受像素级细节影响。</p>
 </section>
 
 <section>
