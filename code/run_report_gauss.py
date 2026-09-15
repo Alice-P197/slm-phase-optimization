@@ -3,8 +3,8 @@
 
 import json
 import numpy as np
-from chartlib import (PAL, MAGMA, LUT_MAG, LUT_GRAY, norm, png_uri, crop,
-                      css_gradient, chart, tbl, figcap)
+from chartlib import (PAL, MAGMA, DIVERGE, LUT_MAG, LUT_DIV, LUT_GRAY, norm, png_uri,
+                      crop, css_gradient, chart, tbl, figcap)
 import slm_common as C
 
 D = np.load("gauss_data.npz")
@@ -128,13 +128,20 @@ F1 = ('<div class="grid2">'
                      LUT_GRAY, size=(300, 300)),
              "图 1d　重画图中心 256 × 256 区域")
       + cell(png_uri(norm(np.mod(pattern_window(phase_full) - D["phi_in"] + np.pi, C.FULL) - np.pi,
-                          vmin=-0.03, vmax=0.03), LUT_MAG, size=(300, 300)),
-             "图 1e　重画图与输入图之差（±0.03 rad）")
+                          vmin=-0.02, vmax=0.02), LUT_DIV, size=(300, 300)),
+             "图 1e　重画图与输入图之差（发散色标，显示范围 ±0.02 rad）")
       + '</div>'
+      + '<div class="gradrow"><span>−0.02 rad</span><i class="grad" style="background:'
+      + css_gradient(DIVERGE) + '"></i><span>+0.02 rad</span><span class="muted">'
+        '（色标中点为零偏差；实测差值范围 −0.0167 … +0.0160 rad，'
+        '均方根 0.0073 rad，94 % 的像素落在 ±0.0123 rad 以内，即 8 bit 舍入量化界内）'
+        '</span></div>'
       + figcap("图 1　相位图重画。由输入图标定的参数为：径向相位斜率 0.8245 rad/像素、"
                "拓扑荷 ℓ = +1、常数相位 φ₀ = %.4f rad。重画图案铺满 15.36 mm × 8.64 mm，"
-               "环带周期 %.2f µm。图 1e 显示中心区域重画结果与输入图的偏差"
-               "（均方根 %.4f rad，为 8 bit 量化步长 0.0246 rad 的 %.0f%%）。"
+               "环带周期 %.2f µm。图 1e 为中心 256 × 256 区域内重画结果与输入图的逐个像素相位差"
+               "（同一坐标网格对齐后相减），差值均方根 %.4f rad，为 8 bit 量化步长 "
+               "0.0246 rad 的 %.0f%%，且 94 %% 的像素落在 ±0.0123 rad（半个量化步长）以内，"
+               "表明偏差来源为输入图的 8 bit 相位量化，而非重画误差。"
                % (M["phi0"], M["r_ring_um"], M["phi0_res_rms"],
                   M["phi0_res_rms"] / 0.0246 * 100)))
 
@@ -318,6 +325,8 @@ figure.cell figcaption{font-size:12.5px;color:var(--muted);margin-top:7px;line-h
 .chart .anno{stroke:#9aa6bb;stroke-dasharray:4 4}.chart .anno-t{font-size:11px;fill:#44506a}
 .chart .legend-t{font-size:12px;fill:#1b2130}
 .figcap{font-size:13px;color:#44506a;background:#f8fafd;border-radius:9px;padding:10px 14px;margin:12px 0 2px;line-height:1.65}
+.gradrow{display:flex;align-items:center;gap:10px;margin:10px 2px 0;font-size:12.5px;color:#5a6474}
+.gradrow .grad{flex:0 0 220px;height:10px;border-radius:5px;border:1px solid var(--line)}
 footer{color:var(--muted);font-size:12.5px;margin-top:26px;line-height:1.8}
 @media (max-width:820px){.grid3,.grid2{grid-template-columns:1fr}}
 """
