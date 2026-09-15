@@ -20,6 +20,8 @@ R_C = float(D["R_C"])
 W_MAIN = M["gauss_w_um"] * 1e-6
 P_FLAT = C.SLM_W * C.SLM_H * 1.0                       # 平顶：像素数（单位：峰值强度×像素）
 P_GAUSS = np.pi * (W_MAIN / C.DX) ** 2 / 2             # 高斯：同上单位
+P_F_MM = C.AP_W * 1e3 * C.AP_H * 1e3                   # 平顶入射功率（mm²）
+P_G_MM = np.pi * (W_MAIN * 1e3) ** 2 / 2               # 高斯入射功率（mm²）
 
 
 def fwd(E, gauss_w):
@@ -131,7 +133,7 @@ F1 = ('<div class="grid2">'
                           vmin=-0.02, vmax=0.02), LUT_DIV, size=(300, 300)),
              "图 1e　重画图与输入图之差（发散色标，显示范围 ±0.02 rad）")
       + '</div>'
-      + '<div class="gradrow"><span>−0.02 rad</span><i class="grad" style="background:'
+      + '<div class="gradrow"><span>−0.02 rad</span><i class="grad" style="background-image:'
       + css_gradient(DIVERGE) + '"></i><span>+0.02 rad</span><span class="muted">'
         '（色标中点为零偏差；实测差值范围 −0.0167 … +0.0160 rad，'
         '均方根 0.0073 rad，94 % 的像素落在 ±0.0123 rad 以内，即 8 bit 舍入量化界内）'
@@ -346,9 +348,11 @@ BODY = f"""
 <section>
 <h2>1　参数与设置</h2>
 {T_SET}
-<p class="muted">高斯照明的功率归一化：振幅 A(r) = exp(−r²/w²)，峰值归一化为 1，
-入射总功率（以峰值强度为单位）为 πw²/2 = {P_GAUSS:.2f} mm²，
-平顶照明为 15.36 × 8.64 = {P_FLAT:.2f} mm²。</p>
+<p class="muted">照明功率归一化：高斯光振幅 A(r) = exp(−r²/w²)，峰值强度归一化为 1。
+相对峰值强度的入射总功率为：高斯 πw²/2 = {P_G_MM:.2f} mm²，平顶
+{C.AP_W*1e3:.2f} mm × {C.AP_H*1e3:.2f} mm = {P_F_MM:.2f} mm²，两者之比
+{P_G_MM/P_F_MM:.4f}；离散求和时分别对应 {P_GAUSS:.0f} 与 {P_FLAT:.0f} 个像素
+（单位：峰值强度 × 像素），比值相同。</p>
 </section>
 
 <section>
