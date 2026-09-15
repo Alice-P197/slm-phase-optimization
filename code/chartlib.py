@@ -86,7 +86,8 @@ def crop(A, half_px, centre=None):
 
 
 def css_gradient(stops, direction="to right"):
-    p = [f"{s[0]*100:.0f}% {_hex(s[1])}" for s in sorted(stops)]
+    # 色标必须写成 "<颜色> <位置>"（颜色在前），否则 Chromium 会判定整个声明无效
+    p = [f"{_hex(s[1])} {s[0]*100:.1f}%" for s in sorted(stops)]
     return f"linear-gradient({direction}, " + ", ".join(p) + ")"
 
 
