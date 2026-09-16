@@ -28,7 +28,14 @@ output/    重画后的相位图、优化后的相位图、光斑对比图、全
 report/    完整分析报告（HTML，含 13 张图与数据表）
 code/      传播、优化与分析代码
 data/      计算结果数据（gauss_data.npz：相位图、优化迭代历史、100 mm 强度分布）
+docs/      通用方法学文档（可迁移到任意相位图/光场调控任务）
 ```
+
+## 通用工作流文档
+
+[`docs/workflow-phase-map-validation-optimization.md`](docs/workflow-phase-map-validation-optimization.md)
+把本案例抽象成一套可复用流程：**给定任意一张相位图 → 建模辨识 → 数值校验 → 指标定义 →
+伴随梯度逆设计 → 四层验证 → 交付打包**，并附常见失效模式、代码骨架、启动清单。
 
 ## 结果摘要
 
