@@ -26,10 +26,24 @@
 input/     原始相位图（256 × 256，8 µm）
 output/    重画后的相位图、优化后的相位图、光斑对比图、全部指标（JSON）
 report/    完整分析报告（HTML，含 13 张图与数据表）
-code/      传播、优化与分析代码
+code/      传播、优化与分析代码（见下"代码结构"）
 data/      计算结果数据（gauss_data.npz：相位图、优化迭代历史、100 mm 强度分布）
 docs/      通用方法学文档（可迁移到任意相位图/光场调控任务）
 ```
+
+## 代码结构
+
+| 文件 | 职责 |
+|---|---|
+| `code/slm_common.py` | 参数标定、相位图案生成、照明场、带限角谱传播、指标计算 |
+| `code/optimize.py` | **优化核心**：径向相位参数化、目标函数、伴随梯度、梯度校验、Adam 迭代 |
+| `code/run_gauss.py` | 流程编排：基线 → 调用优化 → 稳定性验证 → 保存结果 |
+| `code/run_report_gauss.py` | 生成 HTML 报告与全部图表 |
+| `code/chartlib.py` | 绘图模块（SVG 曲线图 + 色标热图） |
+
+优化不是逐像素搜索，而是把相位图参数化为一条径向相位曲线 δ(r)（1103 个节点），
+用伴随梯度（反向传播）解析求导，再用 Adam 迭代最大化 100 mm 处主瓣内的能量占比。
+实现细节见 `code/optimize.py` 中 `RadialPhaseOptimizer` 类。
 
 ## 通用工作流文档
 
@@ -96,11 +110,12 @@ docs/      通用方法学文档（可迁移到任意相位图/光场调控任�
 
 ```bash
 cd code
-python run_gauss.py          # 重画相位图、基线计算、优化、优化后验证
+python run_gauss.py          # 重画相位图、基线计算、调用 optimize 优化、优化后验证
 python run_report_gauss.py   # 生成 HTML 报告与全部图表
 ```
 
-`run_gauss.py` 中的可调参数：`W_MAIN`（高斯束腰）、`ITERS`、`LR`、`NODE_STEP`、`Z`（重建距离）。
+可调参数位于 `code/optimize.py`：`W_MAIN`（高斯束腰）、`ITERS`、`LR`、`NODE_STEP`、`Z`（重建距离）、
+`R_C`（主瓣半径）。
 
 ## 说明
 
